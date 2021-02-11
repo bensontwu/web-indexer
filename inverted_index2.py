@@ -1,6 +1,7 @@
 from utils import get_file_names
 from doc_parse import get_json_from_file, get_html_content_from_json, get_url_from_json, dump_json_to_file
 from tokenizer import tokenize, compute_word_frequencies
+import sys
 import psutil
 
 def create_term(index_dict, token_dict, doc_id):
@@ -16,12 +17,12 @@ def time_to_offload() -> bool:
 def get_partial_index_file_name(partial_index_count: int) -> str:
     return f"index-{partial_index_count}.json"
 
-def main():
+def main(directory_name):
     inverted_index = {}
     partial_index_count = 0
     doc_map = {}
     doc_id = 0
-    file_names = get_file_names("TEST")
+    file_names = get_file_names(directory_name)
     for file in file_names:
         # add the term to the inverted index
         json_dict = get_json_from_file(file)
@@ -39,6 +40,8 @@ def main():
         if time_to_offload():
             dump_json_to_file(inverted_index, get_partial_index_file_name(partial_index_count))
             inverted_index = {}; partial_index_count += 1
+    
+        print(f"Completed file: {file}")
 
     # offload the index
     dump_json_to_file(inverted_index, get_partial_index_file_name(partial_index_count))
@@ -46,4 +49,6 @@ def main():
     # print the document id mapping
     dump_json_to_file(doc_map, "json_mapping.json")
 
-main()
+if __name__ == "__main__":
+    directory_name = sys.argv[1]
+    main(directory_name)
