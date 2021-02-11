@@ -6,4 +6,4 @@ def get_json_from_file(file_name: str) -> dict:
 
 def dump_json_to_file(json_dict: dict, file_name: str) -> dict:
     with open(file_name, "w") as f:
-        json.dump(f)
+        json.dump(json_dict, f)
