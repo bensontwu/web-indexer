@@ -1,2 +1,5 @@
 .vscode
 DEV
+TEST
+__pycache__
+*.json

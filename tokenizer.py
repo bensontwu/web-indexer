@@ -8,7 +8,7 @@ nltk.stem.PorterStemmer()
 def tokenize(html) -> list:
     s = nltk.stem.PorterStemmer()
     final_tokens = []
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, 'html.parser')
 
     texts = soup.findAll(text=True)
     visible_texts = filter(_elem_check, texts)
@@ -17,7 +17,9 @@ def tokenize(html) -> list:
         tokens = re.split("[^A-Za-z0-9']", line)
         for tok in tokens:
             stemmed_word = s.stem(tok)
-            final_tokens.append(stemmed_word)
+            if stemmed_word != "":
+                final_tokens.append(stemmed_word)
+    return final_tokens
 
 def compute_word_frequencies(tokens):
     final_dict = defaultdict(int)
