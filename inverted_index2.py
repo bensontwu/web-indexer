@@ -7,11 +7,11 @@ import sys
 import psutil
 
 def create_term(index_dict, token_dict, doc_id):
-    for i, j in token_dict.items():
-        if i not in index_dict:
-            index_dict[i] = [(doc_id, j)]
+    for token, frequency in token_dict.items():
+        if token not in index_dict:
+            index_dict[token] = [(doc_id, frequency)]
         else:
-            index_dict[i].append((doc_id, j))
+            index_dict[token].append((doc_id, frequency))
 
 def time_to_offload() -> bool:
     return psutil.virtual_memory().percent > 95
