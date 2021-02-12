@@ -1,81 +1,78 @@
-import json
+from utils import get_file_names, url_is_valid
+from doc_parse import get_json_from_file, get_html_content_from_json, get_url_from_json, dump_json_to_file
+from tokenizer import tokenize, compute_word_frequencies
+from json.decoder import JSONDecodeError
+from datetime import datetime
+import sys
 import psutil
 
-# Stores inverted index into each file
-def store_index_json(documents, token_freq):
+def create_term(index_dict, token_dict, doc_id):
+    for token, frequency in token_dict.items():
+        if token not in index_dict:
+            index_dict[token] = [(doc_id, frequency)]
+        else:
+            index_dict[token].append((doc_id, frequency))
 
-	inv_idx = {}
+def time_to_offload() -> bool:
+    return psutil.virtual_memory().percent > 95
 
-	file_num = 0
-	docID = 0
+def get_partial_index_file_name(partial_index_count: int) -> str:
+    return f"index-{partial_index_count}.json"
 
-	for document in documents:
+def create_index(directory_name):
+    # logging
+    print(f"Started!: {datetime.now().strftime('%H:%M:%S')}")
 
-		for token in document:
+    inverted_index = {}
+    partial_index_count = 0
+    doc_map = {}
+    doc_id = 0
+    file_names = get_file_names(directory_name)
+    for file in file_names:
+        try:
+            # add the term to the inverted index
+            json_dict = get_json_from_file(file)
+            url = get_url_from_json(json_dict)
 
-			if token in inv_idx:
-				inv_idx[token].append([docID,token_freq[token]])
-			else:
-				inv_idx[token] = [[docID, token_freq[token]]]
+            # skip this document if the url is not valid
+            if not url_is_valid(url):
+                continue
 
-		docID+=1
+            # create term in index
+            html_content = get_html_content_from_json(json_dict)
+            tokens = tokenize(html_content)
+            word_freqs = compute_word_frequencies(tokens)
+            create_term(inverted_index, word_freqs, doc_id)
 
-		# Used for RAM Check. Turned off for now.
-		# if psutil.virtual_memory().percent > 95:
+            # add the url and document id mapping to the doc map
+            doc_map[doc_id] = url
+            doc_id += 1
 
-		# Sort by dictionary keys alphabetically
-		# inv_idx = sorted(inv_idx.items())
+            # offload the index if need be
+            if time_to_offload():
+                dump_json_to_file(inverted_index, get_partial_index_file_name(partial_index_count))
+                inverted_index = {}; partial_index_count += 1
+            
+            # logging
+            if (doc_id % 100 == 0):
+                print(f"Completed 100 files... current file: {file}")
 
-		with open('inv' + str(file_num) + '.json', 'w') as f:
-			json.dump(inv_idx, f, sort_keys=True, indent=4)
+        except JSONDecodeError:
+            print(f"JSONDecodeError: Skipping file {file}")
+            continue
+        except UnicodeDecodeError:
+            print(f"UnicodeDecodeError: Skipping file {file}")
+            continue
 
-		inv_idx = {}
-		file_num+=1
+    # offload the index
+    dump_json_to_file(inverted_index, get_partial_index_file_name(partial_index_count))
 
-documents = [["word", "in4matx"], ["abcd", "indexaa"]]
-token_freq = {"word":3, "in4matx":5, "abcd":5, "indexaa":3}
+    # print the document id mapping
+    dump_json_to_file(doc_map, "json_mapping.json")
 
-store_index_json(documents, token_freq)
+    # logging
+    print(f"Completed!: {datetime.now().strftime('%H:%M:%S')}")
 
-
-def merge_index(file_num):
-
-	for i in range(0, file_num):
-		with open('inv'+str(i)+'.json', 'r') as f:
-
-			inv_idx = json.load(f)
-
-			# for s in f:
-			# 	# s = s.replace("\'","\"")
-			# 	d = json.loads(s)
-			# 	print(d.keys())
-
-
-merge_index(2)
-
-
-
-
-# d = {'word':2, 'daa':3}
-
-# with open('d.json', 'w') as f:
-# 	json.dump(d, f, sort_keys=True, indent=4)
-# 	json.dump(q, f, sort_keys=True, indent=4)
-
-# with open('d.json') as f:
-# 	for line in f:
-# 		j_content = json.loads(line)
-
-# 		print(j_content)
-
-
-# d = {"a":1,"b":2}
-
-# # for item in d:
-# # 	print(dct{key:value})
-
-
-# from itertools import islice
-
-# for key, value in islice(d.items(), 2):
-# 	print(key)  
+if __name__ == "__main__":
+    directory_name = sys.argv[1]
+    create_index(directory_name)
