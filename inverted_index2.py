@@ -20,7 +20,9 @@ def get_partial_index_file_name(partial_index_count: int) -> str:
     return f"index-{partial_index_count}.json"
 
 def create_index(directory_name):
+    # logging
     print(f"Started!: {datetime.now().strftime('%H:%M:%S')}")
+
     inverted_index = {}
     partial_index_count = 0
     doc_map = {}
@@ -36,11 +38,10 @@ def create_index(directory_name):
             if not url_is_valid(url):
                 continue
 
+            # create term in index
             html_content = get_html_content_from_json(json_dict)
             tokens = tokenize(html_content)
             word_freqs = compute_word_frequencies(tokens)
-
-            # create term in index
             create_term(inverted_index, word_freqs, doc_id)
 
             # add the url and document id mapping to the doc map
@@ -55,6 +56,7 @@ def create_index(directory_name):
             # logging
             if (doc_id % 100 == 0):
                 print(f"Completed 100 files... current file: {file}")
+
         except JSONDecodeError:
             print(f"JSONDecodeError: Skipping file {file}")
             continue
@@ -68,6 +70,7 @@ def create_index(directory_name):
     # print the document id mapping
     dump_json_to_file(doc_map, "json_mapping.json")
 
+    # logging
     print(f"Completed!: {datetime.now().strftime('%H:%M:%S')}")
 
 if __name__ == "__main__":
