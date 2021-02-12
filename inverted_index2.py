@@ -30,14 +30,15 @@ def create_index(directory_name):
         try:
             # add the term to the inverted index
             json_dict = get_json_from_file(file)
-            html_content = get_html_content_from_json(json_dict)
-            tokens = tokenize(html_content)
-            word_freqs = compute_word_frequencies(tokens)
             url = get_url_from_json(json_dict)
 
             # skip this document if the url is not valid
             if not url_is_valid(url):
                 continue
+
+            html_content = get_html_content_from_json(json_dict)
+            tokens = tokenize(html_content)
+            word_freqs = compute_word_frequencies(tokens)
 
             # create term in index
             create_term(inverted_index, word_freqs, doc_id)
