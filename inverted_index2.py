@@ -1,4 +1,4 @@
-from utils import get_file_names
+from utils import get_file_names, url_is_valid
 from doc_parse import get_json_from_file, get_html_content_from_json, get_url_from_json, dump_json_to_file
 from tokenizer import tokenize, compute_word_frequencies
 from json.decoder import JSONDecodeError
@@ -18,7 +18,7 @@ def time_to_offload() -> bool:
 def get_partial_index_file_name(partial_index_count: int) -> str:
     return f"index-{partial_index_count}.json"
 
-def main(directory_name):
+def create_index(directory_name):
     inverted_index = {}
     partial_index_count = 0
     doc_map = {}
@@ -31,10 +31,16 @@ def main(directory_name):
             html_content = get_html_content_from_json(json_dict)
             tokens = tokenize(html_content)
             word_freqs = compute_word_frequencies(tokens)
-            create_term(inverted_index, word_freqs, doc_id)
-            
-            # add the url and document id mapping to the doc map
             url = get_url_from_json(json_dict)
+
+            # skip this document if the url is not valid
+            if not url_is_valid(url):
+                continue
+
+            # create term in index
+            create_term(inverted_index, word_freqs, doc_id)
+
+            # add the url and document id mapping to the doc map
             doc_map[doc_id] = url
             doc_id += 1
 
@@ -43,6 +49,7 @@ def main(directory_name):
                 dump_json_to_file(inverted_index, get_partial_index_file_name(partial_index_count))
                 inverted_index = {}; partial_index_count += 1
             
+            # logging
             print(f"Completed file: {file}")
         except JSONDecodeError:
             continue
@@ -55,4 +62,4 @@ def main(directory_name):
 
 if __name__ == "__main__":
     directory_name = sys.argv[1]
-    main(directory_name)
+    create_index(directory_name)
