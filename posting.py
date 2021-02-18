@@ -43,8 +43,13 @@ def get_combined_postings(l_postings: dict, r_postings: dict) -> dict:
 # Self explainatory
 
 
-def print_postings(postings_dict: dict, limit: int = None) -> None:
+def print_postings(postings_dict: dict, doc_mapping: dict, limit: int = None) -> None:
+    print(doc_mapping)
     for i, (doc_id, token_freq) in enumerate(postings_dict.items()):
         if limit != None and i >= limit:
             break
-        print(f"{doc_id} with a freq of {token_freq}")
+        try:
+            print(f"{doc_mapping[str(doc_id)]} with a freq of {token_freq}")
+        except KeyError:
+            print("key error")
+            continue

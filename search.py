@@ -6,7 +6,9 @@ from posting import get_combined_postings, get_postings, get_postings_dict, get_
 # Input loop
 if __name__ == "__main__":
     index_file_name = sys.argv[1]
+    index_mapping_name = sys.argv[2]
     index = get_json_from_file(index_file_name)
+    mapping = get_json_from_file(index_mapping_name)
 
     while True:
         query_string = input("Please search me!\n>>> ")
@@ -28,7 +30,7 @@ if __name__ == "__main__":
         sorted_postings = get_sorted_postings(combined_postings)
 
         # print the sorted postings
-        print_postings(sorted_postings)
+        print_postings(sorted_postings, mapping)
         
 
 
