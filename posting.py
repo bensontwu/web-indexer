@@ -44,7 +44,6 @@ def get_combined_postings(l_postings: dict, r_postings: dict) -> dict:
 
 
 def print_postings(postings_dict: dict, doc_mapping: dict, limit: int = None) -> None:
-    print(doc_mapping)
     for i, (doc_id, token_freq) in enumerate(postings_dict.items()):
         if limit != None and i >= limit:
             break
