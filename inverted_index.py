@@ -22,7 +22,11 @@ def time_to_offload() -> bool:
 
 
 def get_partial_index_file_name(partial_index_count: int) -> str:
-    return f"index-{partial_index_count}.json"
+    return f"{get_index_dir()}index-{partial_index_count}.json"
+
+
+def get_index_dir() -> str:
+    return "index/"
 
 
 # Return: a list of the partial index file names
@@ -30,7 +34,8 @@ def create_partial_indices(directory_name: str) -> list:
     # logging
     print(f"Started!: {datetime.now().strftime('%H:%M:%S')}")
 
-    inverted_index, partial_index_token_file_locator, doc_map = {}, {}, {}
+    inverted_index, doc_map = {}, {}
+    partial_index_token_file_locator = defaultdict(list)
     partial_index_count, doc_id = 0, 0
     partial_index_file_names = []
 
@@ -79,11 +84,11 @@ def create_partial_indices(directory_name: str) -> list:
                              partial_index_count, partial_index_file_names)
 
     # print the document id mapping
-    dump_json_to_file(doc_map, "doc_id_map.json")
+    dump_json_to_file(doc_map, f"{get_index_dir()}doc_id_map.json")
 
     # Dump token_file_loc which is dictionary object into text file
     # by converting dictionary into string.
-    dump_json_to_file(partial_index_token_file_locator, "token_file_location.json");
+    dump_json_to_file(partial_index_token_file_locator, f"{get_index_dir()}partial_file_token_locator.json");
 
     # logging
     print(f"Partial indices!: {partial_index_file_names}")
@@ -107,10 +112,10 @@ def merge_indices(partial_index_file_names: list):
     inverted_index = defaultdict(list)
 
     # Open the file which stores hash[token] = file location
-    partial_index_token_file_locator = get_json_from_file('token_file_location.json');
+    partial_index_token_file_locator = get_json_from_file(f'{get_index_dir()}partial_file_token_locator.json');
 
     # Open each partial index file and store its object inside list
-    for file_name in range(partial_index_file_names):
+    for file_name in partial_index_file_names:
         partial_index_file_objs.append(open(file_name, 'r'))
 
     # key = token, values = list of locations such as [[0,0],[1,13],[2,0]]
@@ -131,14 +136,14 @@ def merge_indices(partial_index_file_names: list):
 
         # check if it's time to offload
         if time_to_offload():
-            new_index_entry_positions = offload_to_index(inverted_index, 'total_inv_inx.txt')
+            new_index_entry_positions = offload_to_index(inverted_index, f'{get_index_dir()}merged_index.txt')
             # update the index entry locator
             token_locator.update(new_index_entry_positions)
             # clear the in-memory index
             inverted_index.clear()
 
     # write the locator to a file
-    dump_json_to_file(token_locator, 'token_locator.json')
+    dump_json_to_file(token_locator, f'{get_index_dir()}merged_token_locator.json')
 
     # logging
     print(f"Merge finished: {datetime.now().strftime('%H:%M:%S')}")
@@ -147,10 +152,11 @@ def merge_indices(partial_index_file_names: list):
 # Returns a dict of tokens mapped to their position in the index file
 # Return: [token: position]
 def offload_to_index(inverted_index: dict, file_name: str) -> dict:
-    file_position = 0
-    index_entry_positions = defaultdict(list)
+    index_entry_positions = {}
 
     with open(file_name, 'a') as f:
+        # get current file position
+        file_position = f.tell()
         # Store inverted index to the file in the specific form
         # each line will be a dict for each index entry {token: [postings]}
         for token, postings in inverted_index.items():
@@ -158,11 +164,13 @@ def offload_to_index(inverted_index: dict, file_name: str) -> dict:
             f.write(index_entry + '\n')
 
             # Store token and its position (which file and position inside that file)
-            index_entry_positions.append(file_position)
+            index_entry_positions[token] = file_position
 
             # Append position. Position is the number of characters
             # from the start of file.
             file_position += len(index_entry + '\n') + 1
+
+    return index_entry_positions
 
 
 # Similar to offload to index, but does extra work
@@ -177,7 +185,7 @@ def offload_to_partial_index(inverted_index: dict,
     new_index_positions = offload_to_index(inverted_index, file_name)
     # update the partial index token file locator
     for token, position in new_index_positions.items():
-        partial_index_token_file_locator[token] = (partial_index_count, position)
+        partial_index_token_file_locator[token].append((partial_index_count, position))
 
 
 if __name__ == "__main__":
