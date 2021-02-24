@@ -18,7 +18,7 @@ def create_term(index_dict, token_dict, doc_id):
 
 
 def time_to_offload() -> bool:
-    return psutil.virtual_memory().percent > 95
+    return psutil.virtual_memory().percent > 50
 
 
 def get_partial_index_file_name(partial_index_count: int) -> str:
