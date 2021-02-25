@@ -35,6 +35,20 @@ class InvertedIndexManager:
         self._create_partial_indices()
         self._merge_indices()
 
+    # query the index
+    def get_postings(self, token) -> list:
+        token_locator = get_json_from_file(self._index_config.get_token_locator_path())
+
+        try:
+            pos = token_locator[token]
+        except KeyError:
+            return []
+
+        with open(self._index_config.get_index_file_path(), 'r') as f:
+            f.seek(pos, 0)
+            index_entry = json.loads(f.readline())
+            return index_entry[token]
+
     # Return: a list of the partial index file names
     def _create_partial_indices(self):
         # logging
