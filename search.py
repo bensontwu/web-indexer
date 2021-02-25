@@ -1,7 +1,15 @@
 import sys
+import math
 
 from doc_parse import get_json_from_file
 from posting import get_combined_postings, get_postings, get_postings_dict, get_sorted_postings, print_postings
+
+
+def tf_idf(term_freq: int, total_docs: int, doc_freq: int) -> float:
+    tf = 1 + math.log(term_freq, 10)
+    idf = math.log(total_docs/doc_freq, 10)
+    return tf * idf
+
 
 # Input loop
 if __name__ == "__main__":
