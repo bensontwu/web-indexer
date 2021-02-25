@@ -1,6 +1,12 @@
 import os
 from urllib.parse import urlparse
 import re
+import psutil
+
+
+def time_to_offload() -> bool:
+    return psutil.virtual_memory().percent > 50
+
 
 def get_file_names(directory_name: str) -> list:
     file_names = []
@@ -8,6 +14,7 @@ def get_file_names(directory_name: str) -> list:
         for name in files:
             file_names.append(os.path.join(root, name))
     return file_names
+
 
 def url_is_valid(url: str) -> bool:
     try:
