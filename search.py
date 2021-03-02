@@ -2,6 +2,7 @@ import sys
 import json
 import math
 from collections import defaultdict
+from datetime import datetime
 
 from index_config import IndexConfig
 from inverted_index import InvertedIndexManager
@@ -65,6 +66,10 @@ if __name__ == "__main__":
 
     while True:
         query_string = input("Please search me!\n>>> ")
+
+        # for logging
+        start_time = datetime.now()
+
         query_terms = query_string.split()
 
         # [doc_id: [w_tf]]
@@ -107,7 +112,12 @@ if __name__ == "__main__":
                            sorted(doc_scores.items(), key=lambda item: -item[1])}
 
         # print the postings
-        print_postings(sorted_postings, doc_id_map)
-        
+        print_postings(sorted_postings, doc_id_map, limit=5)
+
+        # for logging
+        end_time = datetime.now()
+        time_dif = end_time - start_time
+
+        print(f"Query took {time_dif.microseconds / 1000} milliseconds")
 
 
