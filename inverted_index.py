@@ -148,6 +148,11 @@ class InvertedIndexManager:
                 # update the index entry locator
                 self._token_locator.update(new_index_entry_positions)
 
+        # offload
+        new_index_entry_positions = self._offload_index_to_file(self._index_config.get_index_file_path())
+        # update the index entry locator
+        self._token_locator.update(new_index_entry_positions)
+
         # write the locator to a file
         dump_json_to_file(self._token_locator, self._index_config.get_token_locator_path())
 

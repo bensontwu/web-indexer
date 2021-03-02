@@ -5,7 +5,7 @@ import psutil
 
 
 def time_to_offload() -> bool:
-    return psutil.virtual_memory().percent > 50
+    return psutil.virtual_memory().percent > 95
 
 
 def get_file_names(directory_name: str) -> list:
