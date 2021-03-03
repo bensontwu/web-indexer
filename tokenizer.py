@@ -79,7 +79,7 @@ def tokenize(html) -> list:
     return final_tokens, strong_tokens, title_tokens, h1_tokens, h2_tokens, h3_tokens, bold_tokens
 
 
-def compute_word_frequencies(tokens, strong_tokens, title_tokens):
+def compute_word_frequencies(tokens, strong_tokens, title_tokens, h1_tokens, h2_tokens, h3_tokens, bold_tokens):
     final_dict = defaultdict(int)
 
     for tok in tokens:
