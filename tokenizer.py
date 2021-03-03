@@ -3,7 +3,6 @@ import re
 from collections import defaultdict
 from bs4.element import Comment
 from bs4 import BeautifulSoup
-nltk.stem.PorterStemmer()
         
 def tokenize(html) -> list:
     s = nltk.stem.PorterStemmer()

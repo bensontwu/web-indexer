@@ -3,6 +3,7 @@ import json
 import math
 from collections import defaultdict
 from datetime import datetime
+import nltk.stem
 
 from index_config import IndexConfig
 from inverted_index import InvertedIndexManager
@@ -64,6 +65,9 @@ if __name__ == "__main__":
     doc_id_map_file_name = index_config.get_doc_id_map_path()
     doc_id_map = get_json_from_file(doc_id_map_file_name)
 
+    # initialize stemmer
+    stemmer = nltk.stem.PorterStemmer()
+
     while True:
         query_string = input("Please search me!\n>>> ")
 
@@ -71,6 +75,7 @@ if __name__ == "__main__":
         start_time = datetime.now()
 
         query_terms = query_string.split()
+        query_terms = [stemmer.stem(term) for term in query_terms]
 
         # [doc_id: [w_tf]]
         doc_vectors = defaultdict(list)
