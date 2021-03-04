@@ -31,7 +31,7 @@ def convert_list_tokens(lst) -> list:
 
 def tokenize(html) -> list:
     s = nltk.stem.PorterStemmer()
-    final_tokens = []
+
     soup = BeautifulSoup(html, 'html.parser')
 
     # Get texts of the content and tokenize it -------------------
@@ -76,13 +76,14 @@ def tokenize(html) -> list:
     title_tokens = tokenize_text(title_text)
 
 
-    return final_tokens, strong_tokens, title_tokens, h1_tokens, h2_tokens, h3_tokens, bold_tokens
+    return content_tokens, strong_tokens, title_tokens, h1_tokens, h2_tokens, h3_tokens, bold_tokens
 
 
-def compute_word_frequencies(tokens, strong_tokens, title_tokens, h1_tokens, h2_tokens, h3_tokens, bold_tokens):
+def compute_word_frequencies(content_tokens, strong_tokens, title_tokens, h1_tokens, h2_tokens, h3_tokens, bold_tokens):
+    
     final_dict = defaultdict(int)
 
-    for tok in tokens:
+    for tok in content_tokens:
         final_dict[tok] += 1
 
     for tok in bold_tokens:
