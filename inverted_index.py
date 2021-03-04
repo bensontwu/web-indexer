@@ -68,7 +68,7 @@ class InvertedIndexManager:
 
                 # logging
                 if self._doc_id % 100 == 0:
-                    print("Current memory percentage: " + psutil.virtual_memory().percent)
+                    print(f"Current memory percentage: {psutil.virtual_memory().percent}")
                     print(f"Completed 100 files... current file: {file}")
 
             except JSONDecodeError:
