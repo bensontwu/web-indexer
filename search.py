@@ -80,7 +80,7 @@ if __name__ == "__main__":
         bigrams_lst = list()
 
         for i in range(0, len(query_terms)-1):
-            bigrams_lst.append(query_terms[i] + query_terms[i+1])
+            bigrams_lst.append(query_terms[i] + " " + query_terms[i+1])
 
         query_terms = query_terms + bigrams_lst
 

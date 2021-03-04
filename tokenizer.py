@@ -35,7 +35,7 @@ def create_bigrams(tokens_lst) -> list:
     bigrams_lst = list()
 
     for i in range(0, len(tokens_lst)-1):
-        bigrams_lst.append(tokens_lst[i] + tokens_lst[i+1])
+        bigrams_lst.append(tokens_lst[i] + " " + tokens_lst[i+1])
 
     # Count the bigrams and get top K bigrams based on number of counts
     top_bigrams_count = Counter(bigrams_lst).most_common(100000)
