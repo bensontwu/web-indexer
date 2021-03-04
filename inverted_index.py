@@ -8,9 +8,9 @@ import shutil
 import json
 import sys
 import os
+import psutil
 
 from index_config import IndexConfig
-from utils import time_to_offload
 
 
 class InvertedIndexManager:
@@ -62,7 +62,7 @@ class InvertedIndexManager:
                 self._add_document_to_index(file)
 
                 # offload the index if need be
-                if time_to_offload():
+                if self._time_to_offload():
                     # offload to the partial index
                     self._offload_to_partial_index()
 
@@ -98,8 +98,8 @@ class InvertedIndexManager:
 
         # add the document to the index
         html_content = get_html_content_from_json(json_dict)
-        tokens = tokenize(html_content)
-        token_freqs = compute_word_frequencies(tokens)
+        content_tokens, strong_tokens, title_tokens, h1_tokens, h2_tokens, h3_tokens, bold_tokens = tokenize(html_content)
+        token_freqs = compute_word_frequencies(content_tokens, strong_tokens, title_tokens, h1_tokens, h2_tokens, h3_tokens, bold_tokens)
         for token, frequency in token_freqs.items():
             self._inverted_index[token].append((self._doc_id, frequency))
 
@@ -143,7 +143,7 @@ class InvertedIndexManager:
                     self._inverted_index[token].append(posting)
 
             # check if it's time to offload
-            if time_to_offload():
+            if self._time_to_offload():
                 new_index_entry_positions = self._offload_index_to_file(self._index_config.get_index_file_path())
                 # update the index entry locator
                 self._token_locator.update(new_index_entry_positions)
@@ -158,6 +158,10 @@ class InvertedIndexManager:
 
         # logging
         print(f"Merge finished: {datetime.now().strftime('%H:%M:%S')}")
+
+    def _time_to_offload(self) -> bool:
+        print(psutil.virtual_memory().percent)
+        return psutil.virtual_memory().percent > self._index_config.get_memory_threshold()
 
     # Returns a dict of tokens mapped to their position in the index file
     # Return: [token: position]
