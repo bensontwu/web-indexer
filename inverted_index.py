@@ -161,7 +161,6 @@ class InvertedIndexManager:
         print(f"Merge finished: {datetime.now().strftime('%H:%M:%S')}")
 
     def _time_to_offload(self) -> bool:
-        print(psutil.virtual_memory().percent)
         return psutil.virtual_memory().percent > self._index_config.get_memory_threshold()
 
     # Returns a dict of tokens mapped to their position in the index file
