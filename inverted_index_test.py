@@ -57,6 +57,8 @@ def store_index(documents, token_freq):
 		# by converting dictionary into string.
 		f.write(json.dumps(token_file_loc))
 
+	NumDoc = docID
+
 
 # This function combines partial inverted index into one total inverted index
 # by reading partial files and save it into one file.
@@ -70,6 +72,7 @@ def store_index(documents, token_freq):
 def merge_index(file_num):
 	file_objs = list()
 	inv_idx = {}
+	doc_freq_per_token = {}
 
 	# Open the file which stores hash[token] = file location
 	with open('token_file_location.txt', 'r') as f:
@@ -99,27 +102,34 @@ def merge_index(file_num):
 					else:
 						inv_idx[key] = [lst_val]
 
-		# Store total inverted index into one file at the end
-		with open('total_inv_idx.txt', 'w') as f:
+			if psutil.virtual_memory().percent > 5:
+				# Store total inverted index into one file at the end
+				with open('total_inv_idx.txt', 'a') as f:
 
-			# token and location
-			file_loc_idx = {}
-			# location inside the file
-			loc = 0
+					# token and location
+					file_loc_idx = {}
+					# location inside the file
+					loc = 0
 
-			for key, value in inv_idx.items():
-				temp_idx = {}
-				temp_idx[key] = value
+					for key, value in inv_idx.items():
+						temp_idx = {}
+						temp_idx[key] = value
 
-				f.write(json.dumps(temp_idx)+'\n')
+						doc_freq_per_token[key] = len(value)
 
-				file_loc_idx[key] = loc
-				loc = loc + len(json.dumps(temp_idx)) + 1
+						f.write(json.dumps(temp_idx)+'\n')
 
-				inv_idx={}
+						file_loc_idx[key] = loc
+						loc = loc + len(json.dumps(temp_idx)) + 1
+
+					inv_idx={}
 
 		with open('total_inv_idx_loc.txt', 'w') as f:
 			f.write(json.dumps(file_loc_idx)+'\n')
+
+		with open('doc_freq_per_token.txt', 'w') as f:
+			f.write(json.dumps(doc_freq_per_token)+'\n')	
+
 
 
 def read_one_idx(query_word):

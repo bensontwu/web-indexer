@@ -28,6 +28,21 @@ def convert_list_tokens(lst) -> list:
 
     return tokens
 
+from collections import Counter
+
+def create_bigrams(tokens_lst) -> list:
+
+    bigrams_lst = list()
+
+    for i in range(0, len(tokens_lst)-1):
+        bigrams_lst.append(tokens_lst[i] + tokens_lst[i+1])
+
+    bigrams_count = Counter(bigrams_lst).most_common(100000)
+
+    top_bigrams_lst = [bigram for bigram, count in bigrams_count]
+
+    return top_bigrams_lst
+
 
 def tokenize(html) -> list:
     s = nltk.stem.PorterStemmer()
@@ -39,6 +54,12 @@ def tokenize(html) -> list:
     visible_texts = filter(_elem_check, texts)
     
     content_tokens = tokenize_text(visible_texts)
+
+
+    bigram_tokens = create_bigrams(content_tokens)
+
+    content_tokens = content_tokens + bigram_tokens
+
 
     # Get texts of the strong tag and tokenize it ----------------
     strong_lst = soup.findAll("strong")

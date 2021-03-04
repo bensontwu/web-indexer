@@ -14,6 +14,8 @@ if __name__ == "__main__":
         query_string = input("Please search me!\n>>> ")
         query_terms = query_string.split()
 
+        
+
         # get matching postings from each query term
         posting_dicts = []
         for query_term in query_terms:
