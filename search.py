@@ -4,6 +4,7 @@ import math
 from collections import defaultdict
 from datetime import datetime
 import nltk.stem
+import re
 
 from index_config import IndexConfig
 from inverted_index import InvertedIndexManager
@@ -68,13 +69,15 @@ if __name__ == "__main__":
     # initialize stemmer
     stemmer = nltk.stem.PorterStemmer()
 
+    token_locator = get_json_from_file(index_config.get_token_locator_path())
+
     while True:
         query_string = input("Please search me!\n>>> ")
 
         # for logging
         start_time = datetime.now()
 
-        query_terms = query_string.split()
+        query_terms = re.split("[^A-Za-z0-9']", query_string)
         query_terms = [stemmer.stem(term) for term in query_terms]
         # need to get query terms and how many time each term occurs in query
         # [term: term_frequency]
@@ -92,8 +95,8 @@ if __name__ == "__main__":
         # build the query_vector and term_postings
         for term, freq in query_term_freqs.items():
             # get postings for each term
-            postings = inverted_index_manager.get_postings(term)
-
+            postings = inverted_index_manager.get_postings(term, token_locator)
+            term_postings[term] = postings
             if len(postings) == 0:
                 query_vector.append(0)
             else:
@@ -120,12 +123,12 @@ if __name__ == "__main__":
                            sorted(doc_scores.items(), key=lambda item: -item[1])}
 
         # print the postings
-        print_postings(sorted_postings, doc_id_map, limit=5)
+        print_postings(sorted_postings, doc_id_map, limit=10)
 
         # for logging
         end_time = datetime.now()
         time_dif = end_time - start_time
 
-        print(f"Query took {time_dif.microseconds / 1000} milliseconds")
+        print(f"Query took {time_dif.seconds} seconds, {time_dif.microseconds / 1000} milliseconds")
 
 
