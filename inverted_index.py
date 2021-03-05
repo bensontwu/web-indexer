@@ -8,7 +8,6 @@ import shutil
 import json
 import sys
 import os
-import psutil
 
 from index_config import IndexConfig
 
@@ -51,8 +50,8 @@ class InvertedIndexManager:
 
     # Return: a list of the partial index file names
     def _create_partial_indices(self):
-        # logging
-        print(f"Started creating partial indexes: {datetime.now().strftime('%H:%M:%S')}")
+        # for logging
+        start_time = datetime.now().strftime('%H:%M:%S')
 
         # get the location of the documents and get all of the files inside
         file_names = get_file_names(self._index_config.get_input_dir())
@@ -68,7 +67,7 @@ class InvertedIndexManager:
 
                 # logging
                 if self._doc_id % 100 == 0:
-                    print(f"Current memory percentage: {psutil.virtual_memory().percent}")
+                    print(f"Current memory size: {sys.getsizeof(self._inverted_index)}")
                     print(f"Completed 100 files... current file: {file}")
 
             except JSONDecodeError:
@@ -85,6 +84,7 @@ class InvertedIndexManager:
         dump_json_to_file(self._doc_id_map, self._index_config.get_doc_id_map_path())
 
         # logging
+        print(f"Started at: {start_time}")
         print(f"Partial indices!: {self._partial_index_file_names}")
         print(f"Completed!: {datetime.now().strftime('%H:%M:%S')}")
 
@@ -161,11 +161,13 @@ class InvertedIndexManager:
         print(f"Merge finished: {datetime.now().strftime('%H:%M:%S')}")
 
     def _time_to_offload(self) -> bool:
-        return psutil.virtual_memory().percent > self._index_config.get_memory_threshold()
+        return sys.getsizeof(self._inverted_index) > self._index_config.get_memory_threshold()
 
     # Returns a dict of tokens mapped to their position in the index file
     # Return: [token: position]
     def _offload_index_to_file(self, file_name: str) -> dict:
+
+        print(f"Offloading! {file_name}")
         index_entry_positions = {}
 
         with open(file_name, 'a') as f:

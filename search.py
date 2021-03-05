@@ -76,6 +76,11 @@ if __name__ == "__main__":
 
         query_terms = query_string.split()
         query_terms = [stemmer.stem(term) for term in query_terms]
+        # need to get query terms and how many time each term occurs in query
+        # [term: term_frequency]
+        query_term_freqs = defaultdict(int)
+        for term in query_terms:
+            query_term_freqs[term] += 1
 
         # [doc_id: [w_tf]]
         doc_vectors = defaultdict(list)
@@ -84,18 +89,16 @@ if __name__ == "__main__":
         # [tf_id]
         query_vector = []
 
-        # get matching postings from each query term
-        for query_term in query_terms:
+        # build the query_vector and term_postings
+        for term, freq in query_term_freqs.items():
             # get postings for each term
-            postings = inverted_index_manager.get_postings(query_term)
-            # append to term postings
-            term_postings[query_term] = postings
-            # check if no postings contain query term
+            postings = inverted_index_manager.get_postings(term)
+
             if len(postings) == 0:
                 query_vector.append(0)
             else:
                 # build query vector
-                query_vector.append(tf_idf(1, len(doc_id_map), len(postings)))
+                query_vector.append(tf_idf(freq, len(doc_id_map), len(postings)))
 
         # create the doc_vectors
         for term, postings in term_postings.items():
