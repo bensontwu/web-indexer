@@ -35,8 +35,16 @@ class InvertedIndexManager:
         self._merge_indices()
 
     # query the index
-    def get_postings(self, token) -> list:
-        token_locator = get_json_from_file(self._index_config.get_token_locator_path())
+    def get_postings(self, token, token_locator) -> list:
+
+        # print("DEBUGGING TOKEN LOCATOR")
+        # start_time = datetime.now()
+        #
+        # # for logging
+        # end_time = datetime.now()
+        # time_dif = end_time - start_time
+        #
+        # print(f"TOKEN LOCATOR TOOK {time_dif.microseconds / 1000} milliseconds")
 
         try:
             pos = token_locator[token]
