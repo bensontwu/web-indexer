@@ -89,13 +89,13 @@ def compute_word_frequencies(content_tokens, strong_tokens, title_tokens, h1_tok
     for tok in strong_tokens:
         final_dict[tok] += 3
 
-    for tok in h2_tokens:
+    for tok in h3_tokens:
         final_dict[tok] += 4
 
-    for tok in h1_tokens:
+    for tok in h2_tokens:
         final_dict[tok] += 5
 
-    for tok in h3_tokens:
+    for tok in h1_tokens:
         final_dict[tok] += 6
 
     for tok in title_tokens:
